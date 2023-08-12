@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./Card.css";
 
 export default function Card() {
@@ -7,22 +7,18 @@ export default function Card() {
       Math.random() * 255
     )},${Math.ceil(Math.random() * 255)})`;
 
-    return { ...arr[Math.ceil(Math.random() * arr.length)], color };
-  };
-
-  const genQuote = async () => {
-    let msg = await fetch("https://type.fit/api/quotes");
-    let txt = await msg.json();
-    return getRandQt(txt);
+    return { ...arr[Math.floor(Math.random() * (arr.length - 1))], color };
   };
 
   const [quote, setQuote] = useState({ author: "", text: "", color: "#fff" });
 
-  if (!quote || (!quote.author && !quote.text))
-    setTimeout(
-      genQuote().then((el) => setQuote(el)),
-      5000
-    );
+  const genQuote = () => {
+    fetch("https://type.fit/api/quotes")
+      .then((msg) => msg.json())
+      .then((txt) => setQuote(getRandQt(txt)));
+  };
+
+  useEffect(genQuote, []);
 
   return (
     <section id="quote-box" className="card">
@@ -40,7 +36,10 @@ export default function Card() {
         </a>
         <button
           id="new-quote"
-          onClick={() => genQuote().then((el) => setQuote(el))}
+          onClick={(e) => {
+            e.preventDefault();
+            genQuote();
+          }}
           className="btn btn-primary"
         >
           New Quote
